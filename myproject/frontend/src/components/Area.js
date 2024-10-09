@@ -5,7 +5,7 @@ export default function Area(props) {
   const options = {
     chart: {
       type: "area",
-      height: 160,
+      height: 200,
       toolbar: { show: false },
       dropShadow: { enabled: false },
     },
@@ -18,21 +18,23 @@ export default function Area(props) {
       },
     },
     dataLabels: { enabled: false },
-    stroke: { curve: "smooth" },
+    stroke: { curve: "straight", colors: ["#ceee2b"] },
     series: [
       {
-        name: "New users",
+        name: "Rating",
         show: false,
         data: Array.isArray(props.data) ? props.data : [1, 2, 3, 4],
       },
     ],
     xaxis: {
-      show: false,
       categories: props.categories ? props.categories : [1, 2, 3, 4],
+      labels: {
+        show: false, // This hides the x-axis labels
+      },
     },
   };
 
   return (
-    <Chart options={options} series={options.series} type="area" height={160} />
+    <Chart options={options} series={options.series} type="area" height={200} />
   );
 }

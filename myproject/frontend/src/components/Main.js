@@ -1,23 +1,38 @@
 import React, { useState, useEffect } from "react";
+import { useParams } from "react-router-dom";
 import "flowbite";
 import Chart from "react-apexcharts";
+import ProfileCard from "./ProfileCard";
 
 import Area from "./Area";
-import BarChart from "./BarChart";
-import LineChart from "./LineChart";
+// import BarChart from "./BarChart";
+// import LineChart from "./LineChart";
 import ProgressCard from "./ProgressCard";
 export default function Main() {
+  // console.log("HELLO");
+  const leetcode_id = useParams()["leetcode_id"];
+  const codeforces_id = useParams()["codeforces_id"];
+  const codechef_id = useParams()["codechef_id"];
+  // console.log(codechef_id);
   const [leetcodePastContests, setleetcodePastContests] = useState([]);
   const [leetcodeRating, setleetcodeRating] = useState(null);
   const [leetcodeRanking, setleetcodeRanking] = useState(null);
   const [leetcodecontestsattended, setleetcodecontestsattended] =
     useState(null);
-
+  const [codechefPastContests, setcodechefPastContests] = useState([]);
+  const [codechefRating, setcodechefRating] = useState(null);
+  const [codechefRanking, setcodechefRanking] = useState(null);
+  const [codechefcontestsattended, setcodechefcontestsattended] =
+    useState(null);
   {
     /*leetcode*/
   }
   useEffect(() => {
-    fetch("https://alfa-leetcode-api.onrender.com/bhardwajpulkit910/contest/") // Adjust the path based on your file location
+    fetch(
+      "https://alfa-leetcode-api.onrender.com/"
+        .concat(leetcode_id)
+        .concat("/contest/")
+    ) // Adjust the path based on your file location
       .then((response) => response.json())
       .then((data) => {
         // Assuming your JSON has the following structure
@@ -28,26 +43,48 @@ export default function Main() {
         }));
 
         setleetcodePastContests(contestData);
-        setleetcodeRating(rating);
+        setleetcodeRating(Math.round(rating));
         setleetcodecontestsattended(data.contestAttend);
         setleetcodeRanking(data.contestGlobalRanking);
       })
       .catch((error) => console.error("Error loading data:", error));
-
-    fetch("https://codeforces.com/api/user.rating?handle=pulkit_bhardwaj") // Adjust the path based on your file location
+    fetch("https://codechef-api.vercel.app/handle/".concat(codechef_id)) // Adjust the path based on your file location
       .then((response) => response.json())
       .then((data) => {
+        console.log(data);
         // Assuming your JSON has the following structure
-        const codeforcesRating = data.result[-1].newRating;
+        // console.log(data.result[data.result.length - 1]);
+        const codechefRating = data.currentRating;
+        const contestData = data.ratingData.map((c) => ({
+          time: c.end_date,
+          rating: c.rating,
+        }));
+
+        setcodechefPastContests(contestData);
+        setcodechefRating(Math.round(codechefRating));
+        setcodechefcontestsattended(data.ratingData.length);
+        setcodechefRanking(data.countryRank);
+      })
+      .catch((error) => console.error("Error loading data:", error));
+
+    fetch(
+      "https://codeforces.com/api/user.rating?handle=".concat(codeforces_id)
+    ) // Adjust the path based on your file location
+      .then((response) => response.json())
+      .then((data) => {
+        console.log(data);
+        // Assuming your JSON has the following structure
+        // console.log(data.result[data.result.length - 1]);
+        const codeforcesRating = data.result[data.result.length - 1].newRating;
         const contestData = data.result.map((c) => ({
           time: c.ratingUpdateTimeSeconds,
           rating: c.newRating,
         }));
 
         setcodeforcesPastContests(contestData);
-        setcodeforcesRating(codeforcesRating);
+        setcodeforcesRating(Math.round(codeforcesRating));
         setcodeforcescontestsattended(data.result.length);
-        setcodeforcesRanking(data.result[-1].rank);
+        setcodeforcesRanking(data.result[data.result.length - 1].rank);
       })
       .catch((error) => console.error("Error loading data:", error));
   }, []);
@@ -56,6 +93,12 @@ export default function Main() {
     const date = new Date(item.time * 1000);
     const formattedDate = date.toLocaleDateString("en-US");
     return formattedDate;
+  });
+  const codechefratings = codechefPastContests.map((item) => item.rating);
+  const codecheftimes = codechefPastContests.map((item) => {
+    // const date = new Date(item.time * 1000);
+    // const formattedDate = date.toLocaleDateString("en-US");
+    return item.time;
   });
   {
     /*codeforces*/
@@ -77,7 +120,9 @@ export default function Main() {
       style={{ overflow: "auto" }}
     >
       {/* USER */}
-      <div className="col-span-1 min-h-screen bg-gradient-to-r from-blue-900 to-blue-800 p-6"></div>
+      <div className="col-span-1 min-h-screen bg-gradient-to-r from-blue-900 to-blue-800 p-6">
+        <ProfileCard />
+      </div>
       {/* STATS */}
 
       <div className="min-h-screen bg-gradient-to-r from-blue-900 to-blue-800 p-6 col-span-3">
@@ -92,34 +137,33 @@ export default function Main() {
             <div className="my-4">
               <Area categories={leetcodetimes} data={leetcoderatings} />
             </div>
-            <p>Rating: {leetcodeRating}</p>
-            <p>Attended: {leetcodecontestsattended}</p>
-            <p>Rank: {leetcodeRanking}</p>
+            <p className="font-bold text-lg mt-2">Rating: {leetcodeRating}</p>
+            <p className="font-bold text-lg mt-2">
+              Attended: {leetcodecontestsattended}
+            </p>
+            <p className="font-bold text-lg mt-2">Rank: {leetcodeRanking}</p>
           </div>
           <div className="bg-blue-700 p-6 rounded-lg shadow-lg text-white">
             <h2 className="text-xl">Codechef</h2>
             <div className="my-4">
-              <Area categories={leetcodetimes} data={leetcoderatings} />
+              <Area categories={codecheftimes} data={codechefratings} />
             </div>
-            <p>Rating: {leetcodeRating}</p>
-            <p>Attended: {leetcodecontestsattended}</p>
-            <p>Rank: {leetcodeRanking}</p>
+            <p className="font-bold text-lg mt-2">Rating: {codechefRating}</p>
+            <p className="font-bold text-lg mt-2">
+              Attended: {codechefcontestsattended}
+            </p>
+            <p className="font-bold text-lg mt-2">Rank: {codechefRanking}</p>
           </div>
           <div className="bg-blue-700 p-6 rounded-lg shadow-lg text-white">
             <h2 className="text-xl">Codeforces</h2>
             <div className="my-4">
               <Area categories={codeforcestimes} data={codeforcesratings} />
             </div>
-            <p>Rating: {codeforcesRating}</p>
-            <p>Attended: {codeforcescontestsattended}</p>
-            <p>Rank: {codeforcesRanking}</p>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
-          <div className="bg-blue-700 p-6 rounded-lg shadow-lg text-white">
-            <h2 className="text-xl mb-4">Progress</h2>
-            <ProgressCard />
+            <p className="font-bold text-lg mt-2">Rating: {codeforcesRating}</p>
+            <p className="font-bold text-lg mt-2">
+              Attended: {codeforcescontestsattended}
+            </p>
+            <p className="font-bold text-lg mt-2">Rank: {codeforcesRanking}</p>
           </div>
         </div>
       </div>

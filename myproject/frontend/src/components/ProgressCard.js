@@ -2,7 +2,6 @@
 import React, { useState } from "react";
 import { CircularProgressbar, buildStyles } from "react-circular-progressbar";
 // import 'react-circular-progressbar/dist/styles.css';
-
 const ProgressCard = () => {
   // Values for each ring
   const outerValue = 70; // Outer ring value
