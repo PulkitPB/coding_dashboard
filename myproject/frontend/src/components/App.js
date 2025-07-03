@@ -1,4 +1,5 @@
 import React from "react";
+import ReactDOM from "react-dom/client";
 import { render } from "react-dom";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import Main from "./Main";
@@ -22,5 +23,5 @@ export default function App() {
     </>
   );
 }
-const AppDiv = document.getElementById("app");
-render(<App />, AppDiv);
+const root = ReactDOM.createRoot(document.getElementById("app"));
+root.render(<App />);

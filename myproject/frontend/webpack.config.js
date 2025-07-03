@@ -3,7 +3,7 @@ const webpack = require("webpack");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 
 module.exports = {
-  mode: "production",
+  mode: "development",
   entry: "./src/index.js",
   output: {
     path: path.resolve(__dirname, "./static/frontend"),
@@ -30,7 +30,7 @@ module.exports = {
       filename: "[name].css",
     }),
     new webpack.DefinePlugin({
-      "process.env.NODE_ENV": JSON.stringify("production"),
+      "process.env.NODE_ENV": JSON.stringify("development"),
     }),
   ],
   resolve: {
