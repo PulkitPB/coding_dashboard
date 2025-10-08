@@ -6,6 +6,7 @@ import { FaLinkedin } from "react-icons/fa";
 const ProfileCard = () => {
   const leetcode_id = useParams()["leetcode_id"];
   const codeforces_id = useParams()["codeforces_id"];
+  const codechef_id = useParams()["codechef_id"];
   const [name, setname] = useState(null);
   const [avatar, setavatar] = useState(null);
   const [country, setcountry] = useState(null);
@@ -13,15 +14,19 @@ const ProfileCard = () => {
   const [github, setgithub] = useState(null);
   const [linkedin, setlinkedin] = useState(null);
   useEffect(() => {
-    fetch("https://alfa-leetcode-api.onrender.com/".concat(leetcode_id)) // Adjust the path based on your file location
+    fetch(
+      "https://leetcode-stats.tashif.codes/"
+        .concat(leetcode_id)
+        .concat("/profile")
+    ) // Adjust the path based on your file location
       .then((response) => response.json())
       .then((data) => {
-        const name = data.name;
-        const avatar = data.avatar;
-        const country = data.country;
-        const school = data.school;
-        const github = data.github;
-        const linkedin = data.linkedin;
+        const name = data.profile.realName;
+        const avatar = data.profile.userAvatar;
+        const country = data.profile.countryName;
+        const school = data.profile.school;
+        const github = data.githubUrl;
+        const linkedin = data.linkedinUrl;
 
         setname(name);
         setavatar(avatar);
@@ -34,7 +39,7 @@ const ProfileCard = () => {
       .catch((error) => console.error("Error loading data:", error));
   }, []);
   return (
-    <div className="bg-gray-900 text-white p-6 rounded-lg shadow-lg w-72">
+    <div className="bg-gray-900 text-white p-6 rounded-2xl shadow-lg w-full max-w-md mx-auto">
       {/* Profile Image */}
       <div className="flex flex-col items-center">
         <img
@@ -44,6 +49,7 @@ const ProfileCard = () => {
         />
         <h2 className="mt-4 text-2xl font-semibold">{name}</h2>
         <p className="text-sm text-gray-400">{leetcode_id}</p>
+        <p className="text-sm text-gray-400">{codechef_id}</p>
         <p className="text-sm text-gray-400">{codeforces_id}</p>
       </div>
 

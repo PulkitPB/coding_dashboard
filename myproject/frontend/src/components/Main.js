@@ -1,170 +1,225 @@
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import "flowbite";
-import Chart from "react-apexcharts";
 import ProfileCard from "./ProfileCard";
-
+import LoadingScreen from "./LoadingScreen";
 import Area from "./Area";
-// import BarChart from "./BarChart";
-// import LineChart from "./LineChart";
-import ProgressCard from "./ProgressCard";
+import LeetCodeStats from "./LeetCodeStats";
+import BadgeCard from "./BadgeCard";
+
 export default function Main() {
-  // console.log("HELLO");
-  const leetcode_id = useParams()["leetcode_id"];
-  const codeforces_id = useParams()["codeforces_id"];
-  const codechef_id = useParams()["codechef_id"];
-  // console.log(codechef_id);
-  const [leetcodePastContests, setleetcodePastContests] = useState([]);
-  const [leetcodeRating, setleetcodeRating] = useState(null);
-  const [leetcodeRanking, setleetcodeRanking] = useState(null);
-  const [leetcodecontestsattended, setleetcodecontestsattended] =
+  const { leetcode_id, codeforces_id, codechef_id } = useParams();
+  const [loading, setLoading] = useState(true);
+
+  // LeetCode States
+  const [leetcodePastContests, setLeetcodePastContests] = useState([]);
+  const [leetcodeRating, setLeetcodeRating] = useState(null);
+  const [leetcodeRanking, setLeetcodeRanking] = useState(null);
+  const [leetcodeContestsAttended, setLeetcodeContestsAttended] =
     useState(null);
-  const [codechefPastContests, setcodechefPastContests] = useState([]);
-  const [codechefRating, setcodechefRating] = useState(null);
-  const [codechefRanking, setcodechefRanking] = useState(null);
-  const [codechefcontestsattended, setcodechefcontestsattended] =
+  const [easySolved, seteasySolved] = useState(null);
+  const [totalEasy, settotalEasy] = useState(null);
+  const [mediumSolved, setmediumSolved] = useState(null);
+  const [totalMedium, settotalMedium] = useState(null);
+  const [hardSolved, sethardSolved] = useState(null);
+  const [totalHard, settotalHard] = useState(null);
+  const [totalSolved, settotalSolved] = useState(null);
+  const [totalQuestions, settotalQuestions] = useState(null);
+  const [badges, setbadges] = useState([]);
+
+  // CodeChef & Codeforces States
+  const [codechefPastContests, setCodechefPastContests] = useState([]);
+  const [codechefRating, setCodechefRating] = useState(null);
+  const [codechefRanking, setCodechefRanking] = useState(null);
+  const [codechefContestsAttended, setCodechefContestsAttended] =
     useState(null);
-  {
-    /*leetcode*/
-  }
+  const [codeforcesPastContests, setCodeforcesPastContests] = useState([]);
+  const [codeforcesRating, setCodeforcesRating] = useState(null);
+  const [codeforcesRanking, setCodeforcesRanking] = useState(null);
+  const [codeforcesContestsAttended, setCodeforcesContestsAttended] =
+    useState(null);
+
   useEffect(() => {
-    fetch(
-      "https://alfa-leetcode-api.onrender.com/"
-        .concat(leetcode_id)
-        .concat("/contest/")
-    ) // Adjust the path based on your file location
-      .then((response) => response.json())
-      .then((data) => {
-        // Assuming your JSON has the following structure
-        const rating = data.contestRating;
-        const contestData = data.contestParticipation.map((c) => ({
+    const fetchLeetcode = async () => {
+      const response = await fetch(
+        `https://leetcode-stats.tashif.codes/${leetcode_id}/contests`
+      );
+      const data = await response.json();
+      const contestData = data.contestHistory
+        .filter((c) => c.attended)
+        .map((c) => ({
           time: c.contest.startTime,
-          rating: c.rating,
+          rating: Math.round(c.rating),
         }));
+      setLeetcodePastContests(contestData);
+      setLeetcodeRating(Math.round(data.rating));
+      setLeetcodeContestsAttended(contestData.length);
+      setLeetcodeRanking(data.globalRanking);
+    };
 
-        setleetcodePastContests(contestData);
-        setleetcodeRating(Math.round(rating));
-        setleetcodecontestsattended(data.contestAttend);
-        setleetcodeRanking(data.contestGlobalRanking);
-      })
-      .catch((error) => console.error("Error loading data:", error));
-    fetch("https://codechef-api.vercel.app/handle/".concat(codechef_id)) // Adjust the path based on your file location
-      .then((response) => response.json())
-      .then((data) => {
-        console.log(data);
-        // Assuming your JSON has the following structure
-        // console.log(data.result[data.result.length - 1]);
-        const codechefRating = data.currentRating;
-        const contestData = data.ratingData.map((c) => ({
-          time: c.end_date,
-          rating: c.rating,
-        }));
+    const fetchLeetcodeQuestions = async () => {
+      const response = await fetch(
+        `https://leetcode-stats.tashif.codes/${leetcode_id}`
+      );
+      const data = await response.json();
+      seteasySolved(data.easySolved);
+      setmediumSolved(data.mediumSolved);
+      sethardSolved(data.hardSolved);
+      settotalEasy(data.totalEasy);
+      settotalMedium(data.totalMedium);
+      settotalHard(data.totalHard);
+      settotalSolved(data.totalSolved);
+      settotalQuestions(data.totalQuestions);
+    };
 
-        setcodechefPastContests(contestData);
-        setcodechefRating(Math.round(codechefRating));
-        setcodechefcontestsattended(data.ratingData.length);
-        setcodechefRanking(data.countryRank);
-      })
-      .catch((error) => console.error("Error loading data:", error));
+    const fetchLeetcodeBadges = async () => {
+      const response = await fetch(
+        `https://leetcode-stats.tashif.codes/${leetcode_id}/badges`
+      );
+      const data = await response.json();
+      setbadges(data.badges);
+    };
 
-    fetch(
-      "https://codeforces.com/api/user.rating?handle=".concat(codeforces_id)
-    ) // Adjust the path based on your file location
-      .then((response) => response.json())
-      .then((data) => {
-        console.log(data);
-        // Assuming your JSON has the following structure
-        // console.log(data.result[data.result.length - 1]);
-        const codeforcesRating = data.result[data.result.length - 1].newRating;
-        const contestData = data.result.map((c) => ({
-          time: c.ratingUpdateTimeSeconds,
-          rating: c.newRating,
-        }));
+    const fetchCodechef = async () => {
+      const response = await fetch(
+        `https://codechef-api.vercel.app/handle/${codechef_id}`
+      );
+      const data = await response.json();
+      const contestData = data.ratingData.map((c) => ({
+        time: c.end_date,
+        rating: Math.round(c.rating),
+      }));
+      setCodechefPastContests(contestData);
+      setCodechefRating(Math.round(data.currentRating));
+      setCodechefContestsAttended(contestData.length);
+      setCodechefRanking(data.countryRank);
+    };
 
-        setcodeforcesPastContests(contestData);
-        setcodeforcesRating(Math.round(codeforcesRating));
-        setcodeforcescontestsattended(data.result.length);
-        setcodeforcesRanking(data.result[data.result.length - 1].rank);
-      })
-      .catch((error) => console.error("Error loading data:", error));
-  }, []);
-  const leetcoderatings = leetcodePastContests.map((item) => item.rating);
-  const leetcodetimes = leetcodePastContests.map((item) => {
-    const date = new Date(item.time * 1000);
-    const formattedDate = date.toLocaleDateString("en-US");
-    return formattedDate;
-  });
-  const codechefratings = codechefPastContests.map((item) => item.rating);
-  const codecheftimes = codechefPastContests.map((item) => {
-    // const date = new Date(item.time * 1000);
-    // const formattedDate = date.toLocaleDateString("en-US");
-    return item.time;
-  });
-  {
-    /*codeforces*/
-  }
-  const [codeforcesPastContests, setcodeforcesPastContests] = useState([]);
-  const [codeforcesRating, setcodeforcesRating] = useState(null);
-  const [codeforcesRanking, setcodeforcesRanking] = useState(null);
-  const [codeforcescontestsattended, setcodeforcescontestsattended] =
-    useState(null);
-  const codeforcesratings = codeforcesPastContests.map((item) => item.rating);
-  const codeforcestimes = codeforcesPastContests.map((item) => {
-    const date = new Date(item.time * 1000);
-    const formattedDate = date.toLocaleDateString("en-US");
-    return formattedDate;
-  });
+    const fetchCodeforces = async () => {
+      const response = await fetch(
+        `https://codeforces.com/api/user.rating?handle=${codeforces_id}`
+      );
+      const data = await response.json();
+      const contestData = data.result.map((c) => ({
+        time: c.ratingUpdateTimeSeconds,
+        rating: Math.round(c.newRating),
+      }));
+      const last = data.result[data.result.length - 1];
+      setCodeforcesPastContests(contestData);
+      setCodeforcesRating(last.newRating);
+      setCodeforcesContestsAttended(data.result.length);
+      setCodeforcesRanking(last.rank);
+    };
+
+    Promise.all([
+      fetchLeetcode(),
+      fetchLeetcodeQuestions(),
+      fetchLeetcodeBadges(),
+      fetchCodechef(),
+      fetchCodeforces(),
+    ])
+      .then(() => setLoading(false))
+      .catch((err) => {
+        console.error("Error fetching data:", err);
+        setLoading(false);
+      });
+  }, [leetcode_id, codeforces_id, codechef_id]);
+
+  if (loading) return <LoadingScreen />;
+
+  // Derived data
+  const leetcodeRatings = leetcodePastContests.map((i) => i.rating);
+  const leetcodeTimes = leetcodePastContests.map((i) =>
+    new Date(i.time * 1000).toLocaleDateString()
+  );
+  const codechefRatings = codechefPastContests.map((i) => i.rating);
+  const codechefTimes = codechefPastContests.map((i) => i.time);
+  const codeforcesRatings = codeforcesPastContests.map((i) => i.rating);
+  const codeforcesTimes = codeforcesPastContests.map((i) =>
+    new Date(i.time * 1000).toLocaleDateString()
+  );
+
   return (
-    <div
-      className="grid grid-cols-1 md:grid-cols-4 bg-gradient-to-r from-blue-900 to-blue-800"
-      style={{ overflow: "auto" }}
-    >
-      {/* USER */}
-      <div className="col-span-1 min-h-screen bg-gradient-to-r from-blue-900 to-blue-800 p-6">
+    <div className="grid grid-cols-1 md:grid-cols-4 bg-gradient-to-br from-[#0f172a] via-[#1e293b] to-[#0f172a] text-white min-h-screen overflow-auto">
+      {/* LEFT SIDEBAR */}
+      <div className="col-span-1 flex flex-col justify-start items-center space-y-6 p-6 bg-blue-900/20 backdrop-blur-md border-r border-blue-800/30">
         <ProfileCard />
+        <LeetCodeStats
+          totalSolved={totalSolved}
+          totalQuestions={totalQuestions}
+          easySolved={easySolved}
+          totalEasy={totalEasy}
+          mediumSolved={mediumSolved}
+          totalMedium={totalMedium}
+          hardSolved={hardSolved}
+          totalHard={totalHard}
+        />
       </div>
-      {/* STATS */}
 
-      <div className="min-h-screen bg-gradient-to-r from-blue-900 to-blue-800 p-6 col-span-3">
-        <div className="text-white text-center mb-8">
-          <h1 className="text-3xl font-bold">CODING DASHBOARD</h1>
-        </div>
+      {/* MAIN CONTENT */}
+      <div className="col-span-3 p-8 flex flex-col space-y-8">
+        <h1 className="text-4xl font-bold text-center tracking-wide text-blue-300 mb-4">
+          Coding Dashboard
+        </h1>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {/* Product Cards */}
-          <div className="bg-blue-700 p-6 rounded-lg shadow-lg text-white">
-            <h2 className="text-xl">Leetcode</h2>
-            <div className="my-4">
-              <Area categories={leetcodetimes} data={leetcoderatings} />
+        <BadgeCard badges={badges} />
+
+        {/* Platform Stats Section */}
+        <div className="grid gap-6 md:grid-cols-3">
+          {[
+            {
+              title: "LeetCode",
+              rating: leetcodeRating,
+              attended: leetcodeContestsAttended,
+              rank: leetcodeRanking,
+              times: leetcodeTimes,
+              data: leetcodeRatings,
+            },
+            {
+              title: "CodeChef",
+              rating: codechefRating,
+              attended: codechefContestsAttended,
+              rank: codechefRanking,
+              times: codechefTimes,
+              data: codechefRatings,
+            },
+            {
+              title: "Codeforces",
+              rating: codeforcesRating,
+              attended: codeforcesContestsAttended,
+              rank: codeforcesRanking,
+              times: codeforcesTimes,
+              data: codeforcesRatings,
+            },
+          ].map((site, i) => (
+            <div
+              key={i}
+              className="bg-blue-800/20 backdrop-blur-md p-6 rounded-2xl shadow-lg hover:shadow-blue-700/20 transition-shadow"
+            >
+              <h2 className="text-xl font-semibold text-blue-300 mb-3">
+                {site.title}
+              </h2>
+              <Area categories={site.times} data={site.data} />
+              <div className="mt-4 text-sm text-gray-300 space-y-1">
+                <p>
+                  Rating:{" "}
+                  <span className="font-semibold text-white">
+                    {site.rating}
+                  </span>
+                </p>
+                <p>
+                  Contests Attended:{" "}
+                  <span className="font-semibold text-white">
+                    {site.attended}
+                  </span>
+                </p>
+                <p>
+                  Rank:{" "}
+                  <span className="font-semibold text-white">{site.rank}</span>
+                </p>
+              </div>
             </div>
-            <p className="font-bold text-lg mt-2">Rating: {leetcodeRating}</p>
-            <p className="font-bold text-lg mt-2">
-              Attended: {leetcodecontestsattended}
-            </p>
-            <p className="font-bold text-lg mt-2">Rank: {leetcodeRanking}</p>
-          </div>
-          <div className="bg-blue-700 p-6 rounded-lg shadow-lg text-white">
-            <h2 className="text-xl">Codechef</h2>
-            <div className="my-4">
-              <Area categories={codecheftimes} data={codechefratings} />
-            </div>
-            <p className="font-bold text-lg mt-2">Rating: {codechefRating}</p>
-            <p className="font-bold text-lg mt-2">
-              Attended: {codechefcontestsattended}
-            </p>
-            <p className="font-bold text-lg mt-2">Rank: {codechefRanking}</p>
-          </div>
-          <div className="bg-blue-700 p-6 rounded-lg shadow-lg text-white">
-            <h2 className="text-xl">Codeforces</h2>
-            <div className="my-4">
-              <Area categories={codeforcestimes} data={codeforcesratings} />
-            </div>
-            <p className="font-bold text-lg mt-2">Rating: {codeforcesRating}</p>
-            <p className="font-bold text-lg mt-2">
-              Attended: {codeforcescontestsattended}
-            </p>
-            <p className="font-bold text-lg mt-2">Rank: {codeforcesRanking}</p>
-          </div>
+          ))}
         </div>
       </div>
     </div>
